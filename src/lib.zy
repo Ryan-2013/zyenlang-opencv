@@ -1,0 +1,70 @@
+import std::c_module as c
+
+native module core = c::load("native/opencv.zlcm.h")
+
+public class Image {
+    private raw: core::Image
+
+    public init(raw: core::Image) {
+        this.raw = raw
+    }
+
+    public fn width() i32 {
+        return core::width(this.raw)
+    }
+
+    public fn height() i32 {
+        return core::height(this.raw)
+    }
+
+    public fn channels() i32 {
+        return core::channels(this.raw)
+    }
+
+    public fn byte_length() i64 {
+        return (i64)this.width() * (i64)this.height() * (i64)this.channels()
+    }
+
+    public fn save(path: str) void throws Error {
+        core::save(this.raw, path)
+    }
+
+    public fn clone() Image throws Error {
+        return Image(core::clone(this.raw))
+    }
+
+    public fn resize(width: i32, height: i32) Image throws Error {
+        return Image(core::resize(this.raw, width, height))
+    }
+
+    public fn grayscale() Image throws Error {
+        return Image(core::grayscale(this.raw))
+    }
+
+    public fn gaussian_blur(kernel_size: i32) Image throws Error {
+        return Image(core::gaussian_blur(this.raw, kernel_size))
+    }
+
+    public fn crop(x: i32, y: i32, width: i32, height: i32) Image throws Error {
+        return Image(core::crop(this.raw, x, y, width, height))
+    }
+
+    public fn to_bytes() List<u8> throws Error {
+        let pixels: List<u8> = []
+        let index: i64 = 0
+        while index < this.byte_length() {
+            LIST_PUSH__(pixels, (u8)0)
+            index = index + 1
+        }
+        core::copy_bytes(this.raw, c::mut_slice(&mut pixels))
+        return pixels
+    }
+}
+
+public fn load(path: str, color: bool = true) Image throws Error {
+    return Image(core::read(path, color))
+}
+
+public fn from_bytes(pixels: List<u8>, width: i32, height: i32, channels: i32) Image throws Error {
+    return Image(core::from_bytes(c::slice(&pixels), width, height, channels))
+}

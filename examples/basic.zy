@@ -1,0 +1,8 @@
+import opencv as cv
+
+fn main() i32 throws Error {
+    let image = cv::load("photo.png")
+    let output = image.resize(640, 360).grayscale()
+    output.save("output.png")
+    return 0
+}
